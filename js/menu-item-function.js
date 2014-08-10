@@ -15,6 +15,48 @@ jQuery( document ).ready(function( $ ) {
 		console.log( 'href: ' + href );
 		var slug = getSlug( href );
 		console.log( 'slug: ' + slug );
+		//look for target
+		var $targets = jQuery(".cac_ajax_target");
+		//request post using WP API if target exists
+		if( $targets.length() == 1 ){
+			jQuery.ajax({
+				type : "post",
+				dataType : "json",
+				url : cacAjax.ajaxurl,
+				data : { action: "cac_return_post", slug: slug },
+				success: function(response) {
+					if (response.type == "success") {
+						alert("ok");
+					   jQuery(".cac_ajax_target").html(response.post);
+					}
+					else {
+					   alert("damn.");
+					}
+				}
+			});
+		}
+		// if there's more than one target, just change the first one. (it happens... no need to punish the user for not reading)
+		else if ( $targets.length() > 1 ) {
+			jQuery.ajax({
+				type : "post",
+				dataType : "json",
+				url : cacAjax.ajaxurl,
+				data : { action: "cac_return_post", slug: slug },
+				success: function(response) {
+					if (response.type == "success") {
+						alert("ok");
+					   jQuery(".cac_ajax_target").first().html(response.post);
+					}
+					else {
+					   alert("damn.");
+					}
+				}
+			});
+		}
+		//if no target exists on page, go to the post normally. it can't do nothing...
+		else {
+			window.location = href;
+		}
 	}
 });
 function getSlug(url)

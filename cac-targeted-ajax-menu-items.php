@@ -69,10 +69,57 @@ add_action( 'init', 'cac_ajax_menu_content', 0 );
 // Register Frontend Scripts
 function cac_ajax_js() {
 
-	wp_register_script( 'menuitemfunction', plugin_dir_url( __FILE__ ) . 'js/menu-item-function.js', array( 'jquery' ), '0.0.1', true );
+	wp_register_script( 'menuitemfunction', plugin_dir_url( __FILE__ ) . 'js/menu-item-function.js', array( 'jquery' ), '0.0.1' );
+	wp_localize_script( 'menuitemfunction', 'cacAjax', array( 'ajaxurl' => admin_url( 'admin-ajax.php' ))); 
 	wp_enqueue_script( 'menuitemfunction' );
 
 }
 
 // Hook into the 'wp_enqueue_scripts' action
 add_action( 'wp_enqueue_scripts', 'cac_ajax_js' );
+
+// Add Shortcode for creating target element; enclose content if it exists
+function cac_ajax_target( $atts , $content = null ) {
+	$html = '<div class="cac_ajax_target">';
+	if( $content != null ) {
+	$html .= $content;
+	}
+	$html .= '</div>';
+	return $html;
+}
+add_shortcode( 'ajaxtarget', 'cac_ajax_target' );
+
+add_action("wp_ajax_cac_return_post", "cac_return_post");
+add_action("wp_ajax_nopriv_cac_return_post", "cac_return_post");
+
+//function returns post content of an ajaxmenucontent post, with shortcodes processed, to AJAX request from front end
+function cac_return_post() {
+
+   	$slug = $_REQUEST["slug"];
+	$args = array(
+  		'name' => $slug,
+  		'post_type' => 'ajaxmenucontent',
+  		'post_status' => 'publish',
+  		'numberposts' => 1
+	);
+	$thepost = get_posts($args);
+	
+   if($thepost === false) {
+      $result['type'] = "error";
+   }
+   else {
+      $result['type'] = "success";
+      $result['post'] = do_shortcode($thepost[0]->post_content);
+   }
+
+   if(!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
+      $result = json_encode($result);
+      echo $result;
+   }
+   else {
+      header("Location: ".$_SERVER["HTTP_REFERER"]);
+   }
+
+   die();
+
+}
