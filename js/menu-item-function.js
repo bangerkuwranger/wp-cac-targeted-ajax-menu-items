@@ -18,7 +18,7 @@ jQuery( document ).ready(function( $ ) {
 		//look for target
 		var $targets = jQuery(".cac_ajax_target");
 		//request post using WP API if target exists
-		if( $targets.length() == 1 ){
+		if( $targets.length == 1 ){
 			jQuery.ajax({
 				type : "post",
 				dataType : "json",
@@ -36,7 +36,7 @@ jQuery( document ).ready(function( $ ) {
 			});
 		}
 		// if there's more than one target, just change the first one. (it happens... no need to punish the user for not reading)
-		else if ( $targets.length() > 1 ) {
+		else if ( $targets.length > 1 ) {
 			jQuery.ajax({
 				type : "post",
 				dataType : "json",
